@@ -1,9 +1,28 @@
-import { unstable_cache } from "next/cache";
+type CacheEntry<T> = {
+  data: T;
+  expires: number;
+};
 
-export function cacheByKey<T extends (...args: any[]) => any>(
-  fn: T,
+const cache = new Map<string, CacheEntry<any>>();
+
+export async function withCache<T>(
   key: string,
-  revalidate = 60,
-) {
-  return unstable_cache(fn, [key], { revalidate });
+  ttl: number,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const now = Date.now();
+  const cached = cache.get(key);
+
+  if (cached && cached.expires > now) {
+    return cached.data;
+  }
+
+  const data = await fn();
+
+  cache.set(key, {
+    data,
+    expires: now + ttl,
+  });
+
+  return data;
 }

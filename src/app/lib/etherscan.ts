@@ -8,3 +8,11 @@ export async function getTokenTransfers(address: string, token: string) {
 
   return data.result || [];
 }
+
+export async function getEthPrice(): Promise<number> {
+  const res = await fetch(
+    `https://api.etherscan.io/api?module=stats&action=ethprice&apikey=${process.env.ETHERSCAN_API_KEY}`,
+  );
+  const json = await res.json();
+  return Number(json.result.ethusd);
+}

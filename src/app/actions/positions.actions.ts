@@ -1,20 +1,21 @@
 "use server";
 
-import { provider } from "../lib/ethers";
-import { cacheByKey } from "../lib/cache";
 import { formatEther } from "ethers";
 
-async function _getPosition(publicKey: string) {
-  const balanceWei = await provider.getBalance(publicKey);
-  const balance = Number(formatEther(balanceWei));
+import { getEthPrice } from "../lib/etherscan";
+import { getEntryPrice } from "../lib/wallet";
 
-  // simplified P/L logic placeholder
-  const profitLoss = balance * 0.08;
+export async function getPositionPnL(publicKey: string) {
+  const entryPrice = await getEntryPrice(publicKey);
+  const currentPrice = await getEthPrice();
+  const amount = 1; // или из позиций
+
+  const pnl = (currentPrice - entryPrice) * amount;
+  const pnlPercent = (currentPrice / entryPrice - 1) * 100;
 
   return {
-    balance,
-    profitLoss,
+    pnl,
+    pnlPercent,
+    isProfit: pnl >= 0,
   };
 }
-
-export const getPosition = cacheByKey(_getPosition, "position", 60);

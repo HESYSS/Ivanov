@@ -1,32 +1,63 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { MotionButton } from "./MotionButton";
-import { ChartRange } from "../types/chart";
+import { useEffect, useState, useTransition } from "react";
+import NumberFlow from "@number-flow/react";
+import { ChartPoint, Timeframe } from "../types/chart";
+import { ChartView } from "./ChartView";
+import { TimeframeSelector } from "./TimeframeSelector";
+import { getChartData } from "../actions/chart.actions";
+import { ChartSkeleton } from "./ChartSkeleton";
+type Props = {
+  publicKey: string;
+};
 
-export function ChartBlock({ data, activeRange }) {
-  const router = useRouter();
-  const params = useSearchParams();
+export function ChartBlock({ publicKey }: Props) {
+  const [data, setData] = useState<ChartPoint[]>([]);
+  const [hovered, setHovered] = useState<ChartPoint | null>(null);
+  const [timeframe, setTimeframe] = useState<Timeframe>("1M");
+  const [isPending, startTransition] = useTransition();
 
-  const onChangeRange = (range: ChartRange) => {
-    const next = new URLSearchParams(params.toString());
-    next.set("range", range);
-    router.push(`?${next.toString()}`);
-  };
+  useEffect(() => {
+    startTransition(async () => {
+      const d = await getChartData(publicKey, timeframe);
+      setData(d);
+    });
+  }, [publicKey, timeframe]);
+
+  if (!data.length) return null;
+
+  const last = data[data.length - 1];
+  const active = hovered ?? last;
 
   return (
-    <>
-      {/* график */}
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div>
+          {data.length ? (
+            <>
+              <NumberFlow
+                value={active.value}
+                className="text-3xl font-semibold"
+              />
+              <span className="text-sm text-muted-foreground">
+                {new Date(active.timestamp).toLocaleDateString()}
+              </span>
+            </>
+          ) : (
+            <ChartSkeleton />
+          )}
+        </div>
 
-      {(["1D", "1W", "1M"] as ChartRange[]).map((r) => (
-        <MotionButton
-          key={r}
-          onClick={() => onChangeRange(r)}
-          disabled={r === activeRange}
-        >
-          {r}
-        </MotionButton>
-      ))}
-    </>
+        <TimeframeSelector value={timeframe} onChange={setTimeframe} />
+      </div>
+
+      <div className={isPending ? "opacity-50" : ""}>
+        {data.length ? (
+          <ChartView data={data} onHover={setHovered} />
+        ) : (
+          <ChartSkeleton />
+        )}
+      </div>
+    </div>
   );
 }

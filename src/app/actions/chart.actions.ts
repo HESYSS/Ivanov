@@ -1,28 +1,28 @@
 "use server";
 
-import { unstable_cache } from "next/cache";
-import { ChartRange, ChartPoint } from "../types/chart";
+import { withCache } from "../lib/cache";
+import { ChartPoint, Timeframe } from "../types/chart";
 
-async function _getChart(
-  range: ChartRange,
-  publicKey: string,
-): Promise<ChartPoint[]> {
-  // mock price history logic (replace with etherscan / price api if needed)
+function generateMockData(tf: Timeframe): ChartPoint[] {
   const now = Date.now();
-  const points: ChartPoint[] = [];
 
-  const steps = range === "1D" ? 24 : range === "1W" ? 7 : 30;
+  const config = {
+    "1D": { points: 24, step: 60 * 60 * 1000 },
+    "1W": { points: 7, step: 24 * 60 * 60 * 1000 },
+    "1M": { points: 30, step: 24 * 60 * 60 * 1000 },
+  }[tf];
 
-  for (let i = steps; i >= 0; i--) {
-    points.push({
-      time: new Date(now - i * 86400000).toISOString().slice(0, 10),
-      value: 1000 + Math.random() * 300,
-    });
-  }
-
-  return points;
+  return Array.from({ length: config.points }).map((_, i) => ({
+    timestamp: now - (config.points - i) * config.step,
+    value: 1800 + i * 8,
+  }));
 }
 
-export const getChart = unstable_cache(_getChart, ["chart"], {
-  revalidate: 60,
-});
+export async function getChartData(
+  publicKey: string,
+  timeframe: Timeframe,
+): Promise<ChartPoint[]> {
+  return withCache(`${publicKey}:chart:${timeframe}`, 60_000, async () =>
+    generateMockData(timeframe),
+  );
+}

@@ -1,6 +1,6 @@
 export type ChartPoint = {
-  time: string;
+  timestamp: number;
   value: number;
 };
 
-export type ChartRange = "1D" | "1W" | "1M";
+export type Timeframe = "1D" | "1W" | "1M";

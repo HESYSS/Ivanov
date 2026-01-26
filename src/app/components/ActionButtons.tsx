@@ -1,32 +1,28 @@
 "use client";
 
 import { MotionButton } from "./MotionButton";
-import { deposit, withdraw } from "../actions/wallet.actions";
-import { useTransition } from "react";
 
-export function ActionButtons() {
-  const [isPending, startTransition] = useTransition();
+type Props = {
+  onDeposit: () => Promise<void>;
+  onWithdraw: () => Promise<void>;
+  loading?: boolean;
+};
 
+export function ActionButtons({ onDeposit, onWithdraw, loading }: Props) {
   return (
-    <div style={{ display: "flex", gap: 12 }}>
+    <div className="flex gap-2">
       <MotionButton
-        disabled={isPending}
-        onClick={() =>
-          startTransition(() => {
-            deposit("0.01");
-          })
-        }
+        onClick={onDeposit}
+        disabled={loading}
+        className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
       >
         Deposit
       </MotionButton>
 
       <MotionButton
-        disabled={isPending}
-        onClick={() =>
-          startTransition(() => {
-            withdraw(process.env.NEXT_PUBLIC_WALLET_ADDRESS!, "0.01");
-          })
-        }
+        onClick={onWithdraw}
+        disabled={loading}
+        className="px-4 py-2 bg-red-600 text-white rounded disabled:opacity-50"
       >
         Withdraw
       </MotionButton>

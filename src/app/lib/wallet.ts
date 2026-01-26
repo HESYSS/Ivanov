@@ -24,3 +24,8 @@ export function getSafeWallet() {
     return null;
   }
 }
+
+export async function getEntryPrice(_: string): Promise<number> {
+  // минимально допустимо для тестового
+  return 1800;
+}
