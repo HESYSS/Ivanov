@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ComposedChart,
-  Area,
-  AreaChart,
-} from "recharts";
+import { AreaChart, Area, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartPoint } from "../types/chart";
 
 type Props = {
@@ -36,9 +26,6 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function ChartView({ data, onHover }: Props) {
-  const minValue = Math.min(...data.map((p) => p.value)) - 20;
-  const maxValue = Math.max(...data.map((p) => p.value)) + 20;
-
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart
@@ -60,16 +47,6 @@ export function ChartView({ data, onHover }: Props) {
             <stop offset="95%" stopColor="#ff8c42" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis
-          dataKey="timestamp"
-          tickFormatter={(v) => new Date(v).toLocaleDateString("en-US")}
-          stroke="#d1d5db"
-        />
-        <YAxis
-          domain={[minValue, maxValue]}
-          stroke="#d1d5db"
-          label={{ value: "USD", angle: -90, position: "insideLeft" }}
-        />
         <Tooltip content={<CustomTooltip />} cursor={false} />
         <Area
           type="monotone"

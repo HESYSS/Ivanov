@@ -3,7 +3,12 @@
 import { useEffect, useState, useTransition } from "react";
 import NumberFlow from "@number-flow/react";
 import { motion } from "framer-motion";
-import { getWalletBalance, handleDeposit, handleWithdraw } from "../actions/wallet.actions";
+import {
+  getWalletBalance,
+  handleDeposit,
+  handleWithdraw,
+} from "../actions/wallet.actions";
+import { saveTransaction } from "../lib/localStorage";
 import { MotionButton } from "./MotionButton";
 import toast from "react-hot-toast";
 
@@ -36,30 +41,72 @@ export function BalanceCard({ publicKey }: Props) {
 
   const handleDepositClick = async () => {
     try {
+      const result = await handleDeposit(publicKey);
+
+      // Сохраняем транзакцию в localStorage сразу
+      if (result.success && result.hash) {
+        saveTransaction({
+          id: result.hash,
+          hash: result.hash,
+          from: publicKey,
+          to: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "",
+          value: result.amount,
+          timestamp: Date.now(),
+          type: "out",
+          status: "completed",
+          description: `Deposited ${result.amount} WETH`,
+        });
+
+        // Отправляем евент для обновления других компонентов
+        window.dispatchEvent(new Event("transactionUpdated"));
+      }
+
+      // Refetch balance
       startTransition(async () => {
-        await handleDeposit(publicKey);
-        // Refetch balance
         const data = await getWalletBalance(publicKey);
         setBalance(data.balance);
         setBalanceUsd(data.balanceUsd);
-        toast.success("Deposit successful!");
       });
+
+      toast.success("Deposit successful!");
     } catch (e) {
+      console.error("[BalanceCard] Deposit error:", e);
       toast.error("Deposit failed!");
     }
   };
 
   const handleWithdrawClick = async () => {
     try {
+      const result = await handleWithdraw(publicKey);
+
+      // Сохраняем транзакцию в localStorage сразу
+      if (result.success && result.hash) {
+        saveTransaction({
+          id: result.hash,
+          hash: result.hash,
+          from: publicKey,
+          to: process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "",
+          value: result.amount,
+          timestamp: Date.now(),
+          type: "in",
+          status: "completed",
+          description: `Withdrew ${result.amount} WETH`,
+        });
+
+        // Отправляем евент для обновления других компонентов
+        window.dispatchEvent(new Event("transactionUpdated"));
+      }
+
+      // Refetch balance
       startTransition(async () => {
-        await handleWithdraw(publicKey);
-        // Refetch balance
         const data = await getWalletBalance(publicKey);
         setBalance(data.balance);
         setBalanceUsd(data.balanceUsd);
-        toast.success("Withdraw successful!");
       });
+
+      toast.success("Withdraw successful!");
     } catch (e) {
+      console.error("[BalanceCard] Withdraw error:", e);
       toast.error("Withdraw failed!");
     }
   };
@@ -94,9 +141,7 @@ export function BalanceCard({ publicKey }: Props) {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-gray-500 text-xs mb-1">
-            WETH + Portfolio
-          </p>
+          <p className="text-gray-500 text-xs mb-1">WETH + Portfolio</p>
           <p className="font-semibold text-gray-900">
             $
             <NumberFlow value={balanceUsd} />

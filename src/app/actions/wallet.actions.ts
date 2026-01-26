@@ -42,15 +42,19 @@ export async function handleDeposit(publicKey: string) {
     if (!wallet) throw new Error("Wallet not configured");
 
     // В реальном приложении здесь был бы вызов смарт-контракта
-    // Для теста - просто логируем
-    console.log(`[DEPOSIT] From: ${publicKey}, Amount: 0.5 WETH`);
+    const hash = `0x${Math.random().toString(16).slice(2).padEnd(64, "0")}`;
+    console.log(
+      `[DEPOSIT] From: ${publicKey}, Amount: 0.5 WETH, Hash: ${hash}`,
+    );
 
     // Имитируем задержку транзакции
     await new Promise((r) => setTimeout(r, 2000));
 
     return {
       success: true,
-      hash: `0x${Math.random().toString(16).slice(2)}`,
+      hash: hash,
+      amount: "0.5",
+      type: "out" as const,
     };
   } catch (e) {
     console.error("[handleDeposit] Error:", e);
@@ -64,14 +68,19 @@ export async function handleWithdraw(publicKey: string) {
     if (!wallet) throw new Error("Wallet not configured");
 
     // В реальном приложении здесь был бы вызов смарт-контракта
-    console.log(`[WITHDRAW] To: ${publicKey}, Amount: 0.25 WETH`);
+    const hash = `0x${Math.random().toString(16).slice(2).padEnd(64, "0")}`;
+    console.log(
+      `[WITHDRAW] To: ${publicKey}, Amount: 0.25 WETH, Hash: ${hash}`,
+    );
 
     // Имитируем задержку транзакции
     await new Promise((r) => setTimeout(r, 2000));
 
     return {
       success: true,
-      hash: `0x${Math.random().toString(16).slice(2)}`,
+      hash: hash,
+      amount: "0.25",
+      type: "in" as const,
     };
   } catch (e) {
     console.error("[handleWithdraw] Error:", e);

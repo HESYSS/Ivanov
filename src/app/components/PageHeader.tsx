@@ -11,7 +11,9 @@ export function PageHeader() {
       className="mb-12"
     >
       <h1 className="text-5xl font-bold text-white mb-2">DeFi Dashboard</h1>
-      <p className="text-orange-100">Track your portfolio and manage your assets</p>
+      <p className="text-orange-100">
+        Track your portfolio and manage your assets
+      </p>
     </motion.div>
   );
 }

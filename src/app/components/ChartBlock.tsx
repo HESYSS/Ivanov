@@ -63,7 +63,10 @@ export function ChartBlock({ publicKey }: Props) {
         >
           <span className={isProfit ? "text-green-500" : "text-red-500"}>
             {isProfit ? "+" : "-"}$
-            <NumberFlow value={Math.abs(active.value)} format={{ minimumFractionDigits: 2 }} />
+            <NumberFlow
+              value={Math.abs(active.value)}
+              format={{ minimumFractionDigits: 2 }}
+            />
           </span>
         </motion.div>
         <p className="text-sm text-gray-500 mt-2">
